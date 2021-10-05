@@ -13,7 +13,8 @@
 user=$1
 
 # LE API
-API='https://acme-v02.api.letsencrypt.org'
+#API='https://acme-v02.api.letsencrypt.org/directory'
+API='https://api.buypass.com/acme/directory'
 
 # Includes
 source $VESTA/func/main.sh
@@ -103,11 +104,11 @@ fi
 
 
 # Requesting ACME nonce
-nonce=$(curl -s -I "$API/directory" |grep -i nonce |cut -f2 -d\ |tr -d '\r\n')
+nonce=$(curl -s -I "$API" |grep -i nonce |cut -f2 -d\ |tr -d '\r\n')
 
 # Creating ACME account
-url="$API/acme/new-acct"
-payload='{"termsOfServiceAgreed": true}'
+url=$(curl -s "$API" |sed 's/.*"newAccount": \?"\([^"]\+\)".*/\1/')
+payload="{\"contact\": [\"mailto:$EMAIL\"], \"termsOfServiceAgreed\": true}"
 answer=$(query_le_v2 "$url" "$payload" "$nonce")
 kid=$(echo "$answer" |grep -i location: |cut -f2 -d ' '|tr -d '\r')
 
